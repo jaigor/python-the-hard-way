@@ -12,7 +12,7 @@ def while_num (var, counter):
 		print "Numbers now: ", numbers
 		print "At the bottom i is %d" % i
 
-while_num()
+while_num(6,1)
 
 print "The numbers: "
 
