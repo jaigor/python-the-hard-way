@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from random import randint   # used to get a random number
-from sys import exit
+from sys import exit		# for quit application
 
 class Actor:
-	"""Abstract Class for actors (players and enemies)"""
+	"""Abstract Class for actors (players and enemies)
+	Common atributes, not instanciated"""
+
 	life = 100
 	isDead = False
 	attacks = []
 	weakness = []
+
+	# stores the attacks used on battle to penalize
+	usedAttacks = []
 
 	def set_life(self, life):
 		self.life = life
@@ -18,7 +23,11 @@ class Actor:
 	def set_isDead(self, isDead):
 		self.isDead = isDead
 		if isDead == True:
-			game_over()
+			if isinstance(self, Player):
+				instance = "player"
+			elif isinstance(self, Enemy):
+				instance = "enemy"
+			game_over(instance)
 
 	def set_attacks(self, attacks):
 		self.attacks = attacks
@@ -38,36 +47,38 @@ class Actor:
 	def get_weakness(self):
 		return self.weakness
 
+	def add_used_attack(self, attack):
+		self.usedAttacks.add(attack)
+
 
 class Player(Actor):
+	"""Inheritance from Actor, instances object player"""
 	def __init__(self, idClass):
-		if idClass == "1":
+		if idClass == 1:
 			self.set_attacks(Ultra().get_attacks())
 			self.set_weakness(Ultra().get_weakness())
 			self.name = Ultra().get_name()
-		elif idClass == "2":
+		elif idClass == 2:
 			self.set_attacks(Conservador().get_attacks())
 			self.set_weakness(Conservador().get_weakness())
 			self.name = Conservador().get_name()
-		elif idClass == "3":
+		elif idClass == 3:
 			self.set_attacks(Radical().get_attacks())
 			self.set_weakness(Radical().get_weakness())
 			self.name = Radical().get_name()
-		elif idClass == "4":
+		elif idClass == 4:
 			self.set_attacks(Socialista().get_attacks())
 			self.set_weakness(Socialista().get_weakness())
 			self.name = Socialista().get_name()
-
-	def get_idClass(self):
-		return self.idClass
 
 	def get_name(self):
 		return self.name
 
 
 class Enemy(Actor):
+	"""Inheritance from Actor, instances object enemy"""
 	def __init__(self, idClass):
-		if idClass == "1" or idClass == "2":
+		if idClass == 1 or idClass == 2:
 			rival = Derecha().get_rival
 			# random number to decide rival
 			randomNum = randint(3,4)
@@ -79,7 +90,7 @@ class Enemy(Actor):
 				self.set_attacks(Socialista().get_attacks())
 				self.set_weakness(Socialista().get_weakness())
 				self.name = Socialista().get_name()
-		elif idClass == "3" or idClass == "4":
+		elif idClass == 3 or idClass == 4:
 			rival = Izquierda().get_rival
 			# random number to decide rival
 			randomNum = randint(1,2)
@@ -96,7 +107,7 @@ class Enemy(Actor):
 		return self.name
 
 
-##### Political Classes #####
+################# Political Classes #################
 
 class Derecha:
 	rival = "Izquierda"
@@ -166,29 +177,45 @@ class Socialista(Izquierda):
 	def get_name(self):
 		return self.name
 
-################# MENUS (Text Interface) ###################
+################# Menus (Text Interface) ###################
 
 def combat_menu():
+	print "\n"
 	print "------Debate Combat-------"
 	print "Escoge bando politico:"
+	print "--------------------------"
 	print "Derecha"
 	print "1. Ultra"
 	print "2. Conservador"
+	print "--------------------------"
 	print "Izquierda"
 	print "3. Radical"
 	print "4. Socialista"
-	choice = raw_input('> ')
+	print "--------------------------"
+	
+	notFound = True
+	while (notFound):
+		choice = int(input('> '))
+		if choice > 0 and choice < 5:
+			notFound = False
+		else:
+			print "No has introducido un valor correcto. Escoge bando por favor:"
+
 	initial_stage(choice)
 
 def initial_stage(choice):
 	player = Player(choice)
 	enemy = Enemy(choice)
 
+	print "\n"
+	print "------------------------------"
 	print "Presentacion de contricantes!"
+	print "------------------------------"	
 	print "-- %r -- vs -- %r --" % (player.get_name(), enemy.get_name())
+	print "------------------------------"
 	print "Se trata de un combate verbal."
 	print "Recuerda que la repeticion en politica es contraproducente"
-
+	print "------------------------------"
 	nextTurn = "player"
 	print "Pulsa Intro para continuar!"
 	raw_input('> ')
@@ -196,44 +223,65 @@ def initial_stage(choice):
 
 def combat_interface(player,enemy, nextTurn):
 	print "\n"
-	print "Player Stats"
+	print "*******************************"
+	print "%r Stats" % player.get_name()
 	print "HP: %r" % player.get_life()
 	print "Ataques: "
 	i = 1
 	for attack in player.get_attacks():
 		print "%d. %r" % (i, attack)
 		i += 1
+	print "*******************************"
 
 	print "\n"
-	print "Enemy Stats"
+	print "*******************************"
+	print "%r Stats" % enemy.get_name()
 	print "HP: %r" % enemy.get_life()
-	print "\n"
+	print "*******************************"
 
 	if nextTurn == "player":
-		attack_menu(player, enemy)
+		attack_player(player, enemy)
 	elif nextTurn == "enemy":
 		attack_enemy(player, enemy)
 
-def attack_menu(player, enemy):
+def attack_player(player, enemy):
 	print "Introduzca ataque a realizar: "
-	nextAttack = raw_input('> ')
+	notFound = True
+	while (notFound):
+		nextAttack = int(input('> '))
+		if nextAttack > 0 and nextAttack <= len(player.get_attacks()):
+			notFound = False
+		else:
+			print "No has introducido un valor correcto. Escoge ataque por favor:"
+
 	combat_engine(nextAttack, player, enemy)
 
 def attack_enemy(player, enemy):
+	# attacks randomly to player
 	randomNum = randint(1,4)
+
 	combat_engine(randomNum, enemy, player)
 
+################# Combat engine ###################
+
 def combat_engine(nextAttack, player, enemy):
-	attack = player.get_attacks()[int(nextAttack) - 1]
+	# gets the attack of the list
+	attack = player.get_attacks()[nextAttack - 1]
+
+	print "*******************************"
 	print "%r uso %r." % (player.get_name(), attack)
 
 	if (any(weak == attack for weak in enemy.get_weakness())):
 		print "El ataque ha sido muy efectivo!!!"
+		print "*******************************"
 		enemy.set_life(enemy.get_life() - 50) 
 	else:
 		print "No ha causado mucho efecto"
+		print "*******************************"
 		enemy.set_life(enemy.get_life() - 30)
-		
+	
+	print "*******************************"
+
 	if isinstance(player, Player):
 		nextTurn = "enemy"
 		combat_interface(player,enemy, nextTurn)
@@ -241,7 +289,11 @@ def combat_engine(nextAttack, player, enemy):
 		nextTurn = "player"
 		combat_interface(enemy, player, nextTurn)
 
-def game_over():
+def game_over(instance):
+	if instance == "player":
+		print "No has podido aplastar a tu rival..."
+	elif instance == "enemy":
+		print "Has aplastado a tu rival!"
 	print "******FIN DE LA PARTIDA******"
 	exit(0)
 
