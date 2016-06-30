@@ -47,8 +47,12 @@ class Actor:
 	def get_weakness(self):
 		return self.weakness
 
+	# add a used attack to the list
 	def add_used_attack(self, attack):
-		self.usedAttacks.add(attack)
+		self.usedAttacks.append(attack)
+
+	def get_usedAttacks(self):
+		return self.usedAttacks
 
 
 class Player(Actor):
@@ -216,7 +220,14 @@ def initial_stage(choice):
 	print "Se trata de un combate verbal."
 	print "Recuerda que la repeticion en politica es contraproducente"
 	print "------------------------------"
-	nextTurn = "player"
+
+	# decides who goes first randomly
+	randomNum = randint(1,2)
+	if randomNum == 1:
+		nextTurn = "player"
+	elif randomNum == 2:
+		nextTurn = "enemy"
+
 	print "Pulsa Intro para continuar!"
 	raw_input('> ')
 	combat_interface(player,enemy, nextTurn)
@@ -268,19 +279,26 @@ def combat_engine(nextAttack, player, enemy):
 	# gets the attack of the list
 	attack = player.get_attacks()[nextAttack - 1]
 
-	print "*******************************"
+	print "-------------------------------"
 	print "%r uso %r." % (player.get_name(), attack)
 
-	if (any(weak == attack for weak in enemy.get_weakness())):
-		print "El ataque ha sido muy efectivo!!!"
-		print "*******************************"
-		enemy.set_life(enemy.get_life() - 50) 
-	else:
-		print "No ha causado mucho efecto"
-		print "*******************************"
-		enemy.set_life(enemy.get_life() - 30)
+	if any(usedAttack == attack for usedAttack in player.get_usedAttacks()):
+		print "Te repites..., no ha sido muy efectivo"
+		print "-------------------------------"
+		enemy.set_life(enemy.get_life() - 20) 
+	else:			
+		if any(weak == attack for weak in enemy.get_weakness()):
+			print "El ataque ha sido muy efectivo!!!"
+			print "-------------------------------"
+			enemy.set_life(enemy.get_life() - 50) 
+		else:
+			print "No ha causado mucho efecto"
+			print "-------------------------------"
+			enemy.set_life(enemy.get_life() - 30)
 	
 	print "*******************************"
+
+	player.add_used_attack(attack)
 
 	if isinstance(player, Player):
 		nextTurn = "enemy"
@@ -297,4 +315,5 @@ def game_over(instance):
 	print "******FIN DE LA PARTIDA******"
 	exit(0)
 
+# Start the game
 combat_menu()
