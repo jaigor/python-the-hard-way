@@ -1,3 +1,4 @@
+# Dicts are inherently orderless, but other types, such as lists and tuples, are not. 
 # create a mapping of state to abbreviation
 states = {
     'Oregon': 'OR',

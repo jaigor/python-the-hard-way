@@ -97,7 +97,7 @@ while True:
 		print "Execute this always"
 
 # with, as: assigned to a variable with "as", for example to
-# open a file, that always is going to close after execution of code  http://effbot.org/zone/python-with-statement.htm
+# open a file, that always is going to close after execution of http  code://effbot.org/zone/python-with-statement.htm
 with open("x.txt") as f:
     data = f.read()
     do something with data
