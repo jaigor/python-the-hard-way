@@ -16,7 +16,7 @@ verbs = [('verb', 'go'),
          ('verb', 'kill'),
          ('verb', 'eat'),]
 
-# stops words
+# stops words, not useful for us
 stops = [('stop', 'the'),
          ('stop', 'in'),
          ('stop', 'of'),
@@ -39,36 +39,36 @@ def scan(inputs):
 
     # iterates in each separate word
     for word in words:
-        found = False
+        found_word = False
 
-        # looks in every tuple list if exits the word looked for
+        # looks in every tuple list if exits the word looked for    
         for direction in directions:
             if direction[1] == word.lower(): # converts all strings to lowercase
                 found_words.append(direction)
-                found = True
+                found_word = True
 
         for verb in verbs:
             if verb[1] == word.lower():
                 found_words.append(verb)
-                found = True
+                found_word = True
 
         for stop in stops:
             if stop[1] == word.lower():
                 found_words.append(stop)
-                found = True
+                found_word = True
 
         for noun in nouns:
             if noun[1] == word.lower():
                 found_words.append(noun)
-                found = True
+                found_word = True
 
         if len(word) >= 0 and len(word) <= 9:
             number = convert_number(word)
             if number != None:
                 found_words.append(('number', number))
-                found = True
+                found_word = True
 
-        if found == False:
+        if found_word == False:
            found_words.append(('error', word))
 
     return found_words
